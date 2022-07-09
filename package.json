@@ -13,6 +13,7 @@
     "http-errors": "~1.6.3",
     "joi": "^17.6.0",
     "joi-objectid": "^4.0.2",
+    "lodash": "^4.17.21",
     "mongoose": "^6.3.3",
     "morgan": "~1.9.1",
     "nodemon": "^2.0.16",
