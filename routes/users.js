@@ -1,8 +1,8 @@
-import {User, validateUser} from '../models/user.js'
-import Express from "express";
-import {lodash} from "lodash/seq.js";
+const {User, validateUser} = require('../models/user.js');
+const express = require('express');
+const _ = require('lodash');
 
-const router = Express.router();
+const router = express.Router();
 
 router.post('/', async (req, res) => {
     const {error} = validateUser(req.body);
@@ -13,8 +13,10 @@ router.post('/', async (req, res) => {
     if (user)
         return res.status(400).send("User Already registered!");
 
-    user = new User(lodash.pick(req.body, ['name', 'email', 'password', 'phoneNumber', 'bio']));
+    user = new User(_.pick(req.body, ['name', 'email', 'password', 'phoneNumber', 'bio']));
     await user.save();
+
+    res.send(user);
 });
 
 router.post('/contacts', async (req, res) => {
@@ -22,19 +24,25 @@ router.post('/contacts', async (req, res) => {
     if (!user)
         return res.status(404).send("User not found!");
 
-    const me = await User.findOne({_id: req.body.me});
-    me.contacts.push(req.body.id);
+    const me = await User.findById(req.body.me);
+    const Contacts = me.contacts;
+    Contacts.push(req.body.id);
+    me.contacts = Contacts;
 
     await me.save();
 });
 
 router.delete('/contacts', async (req, res) => {
-    let user = await User.findOne({_id: req.body.id});
+    const user = await User.findById(req.body.id);
     if (!user)
         return res.status(404).send("User not found!");
 
-    const me = await User.findOne({_id: req.body.me});
-    me.contacts.filter((id) => id !== req.body.id);
+    const me = await User.findById(req.body.me);
+    const Contacts = me.contacts;
+    Contacts.filter((id) => id !== req.body.id);
+    me.contacts = Contacts;
 
     await me.save();
 })
+
+module.exports = router;

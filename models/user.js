@@ -1,5 +1,5 @@
-import Joi from "joi";
-import mongoose from "mongoose";
+const Joi = require('joi');
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -34,32 +34,32 @@ const userSchema = new mongoose.Schema({
         default: "This is a test from Talkrr"
     },
     contacts: {
-        type: [mongoose.Types.ObjectId],
+        type: [mongoose.Schema.Types.ObjectId],
         ref: 'User',
         required: true,
         default: []
     },
     conversations: {
-        type: [mongoose.Types.ObjectId],
+        type: [mongoose.Schema.Types.ObjectId],
         ref: 'Chat',
         required: true,
         default: []
     }
 })
 
-export const User = mongoose.model('User', userSchema);
+const User = mongoose.model('User', userSchema);
 
-export function validateUser(user) {
+function validateUser(user) {
     const schema = Joi.object({
         name: Joi.string().min(3).max(70).required(),
         email: Joi.string().min(5).max(255).required().email(),
         password: Joi.string().min(5).max(100).required(),
-        phoneNumber: Joi.number().min(7).max(15),
+        phoneNumber: Joi.string().min(7).max(15),
         bio: Joi.string().min(3).max(100),
-        // contacts: Joi.objectId().required()
     })
 
     return schema.validate(user);
 }
 
-// export default {User, validateUser};
+module.exports.User = User;
+module.exports.validateUser = validateUser;

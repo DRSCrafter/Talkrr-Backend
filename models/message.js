@@ -1,5 +1,5 @@
-import Joi from "joi";
-import mongoose from "mongoose";
+const Joi = require('joi');
+const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
     content: {
