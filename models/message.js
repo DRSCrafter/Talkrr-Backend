@@ -17,6 +17,8 @@ const messageSchema = new mongoose.Schema({
     }
 })
 
+const Message = mongoose.model('Message', messageSchema);
+
 function validateMessage(message) {
     const schema = Joi.object({
         content: Joi.string().min(1).max(255).required(),
@@ -26,4 +28,4 @@ function validateMessage(message) {
     return schema.validate(message);
 }
 
-export default {messageSchema, validateMessage};
+export default {Message, validateMessage};

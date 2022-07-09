@@ -1,5 +1,7 @@
 import Express from 'express';
 import mongoose from "mongoose";
+const Joi = require('joi');
+Joi.objectId = require('joi-objectid')(Joi);
 
 const app = Express();
 
