@@ -42,6 +42,9 @@ router.delete('/contacts/', async (req, res) => {
     const Contacts = [...me.contacts];
     const target = ObjectId(req.body.id);
     const index = Contacts.indexOf(target);
+    if (!index)
+        return res.status(400).send("User is not a friend!");
+
     Contacts.splice(index, 1);
     me.contacts = Contacts;
 

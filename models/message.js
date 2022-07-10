@@ -7,7 +7,7 @@ const messageSchema = new mongoose.Schema({
         required: true,
     },
     sender: {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     },
     date: {
@@ -28,4 +28,6 @@ function validateMessage(message) {
     return schema.validate(message);
 }
 
-export default {Message, validateMessage};
+module.exports.Message = Message;
+module.exports.validateMessage = validateMessage();
+module.exports.messageSchema = messageSchema;

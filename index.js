@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 Joi.objectId = require('joi-objectid')(Joi);
 const user = require('./routes/users');
+const talk = require('./routes/talks');
 
 const app = express();
 
@@ -12,6 +13,7 @@ mongoose.connect('mongodb://localhost/talkrr')
 
 app.use(express.json())
 app.use('/api/users', user);
+app.use('/api/talks', talk);
 
 const port = process.env.PORT || 3001;
 app.listen(port, () => console.log(`Listening on Port ${port}...`));
