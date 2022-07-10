@@ -17,7 +17,10 @@ const talkSchema = new mongoose.Schema({
         default: "This is a talk from Talkrr"
     },
     members: {
-        type: [String],
+        type: [{
+            id: String,
+            name: String
+        }],
         required: true,
         default: []
     },

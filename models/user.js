@@ -34,14 +34,18 @@ const userSchema = new mongoose.Schema({
         default: "This is a test from Talkrr"
     },
     contacts: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'User',
+        type: [{
+            id: String,
+            name: String,
+        }],
         required: true,
         default: []
     },
-    conversations: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: 'Chat',
+    talks: {
+        type: [{
+            id: String,
+            name: String
+        }],
         required: true,
         default: []
     }

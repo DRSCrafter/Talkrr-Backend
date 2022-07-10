@@ -1,7 +1,6 @@
 const {User, validateUser} = require('../models/user.js');
 const express = require('express');
 const _ = require('lodash');
-const {ObjectId} = require('mongodb');
 
 const router = express.Router();
 
@@ -21,16 +20,21 @@ router.post('/', async (req, res) => {
 });
 
 router.post('/contacts/', async (req, res) => {
-    let user = await User.findOne({_id: req.body.id});
+    const user = await User.findById(req.body.id);
     if (!user)
         return res.status(404).send("User not found!");
 
     const me = await User.findById(req.body.me);
     const Contacts = [...me.contacts];
-    Contacts.push(req.body.id);
+    Contacts.push({
+        id: req.body.id,
+        name: user.name
+    });
     me.contacts = Contacts;
 
     await me.save();
+
+    res.send(req.body.id);
 });
 
 router.delete('/contacts/', async (req, res) => {
@@ -40,15 +44,12 @@ router.delete('/contacts/', async (req, res) => {
 
     const me = await User.findById(req.body.me);
     const Contacts = [...me.contacts];
-    const target = ObjectId(req.body.id);
-    const index = Contacts.indexOf(target);
-    if (!index)
-        return res.status(400).send("User is not a friend!");
-
+    const index = Contacts.findIndex(contact => contact.id === req.body.id);
     Contacts.splice(index, 1);
-    me.contacts = Contacts;
 
+    me.contacts = Contacts;
     await me.save();
+
     res.send(req.body.id);
 })
 

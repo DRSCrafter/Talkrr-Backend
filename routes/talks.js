@@ -26,4 +26,22 @@ router.post('/', async (req, res) => {
     res.send(talk);
 });
 
+router.post('/', async (req, res) => {
+    const user = await User.findById(req.body.id);
+    const talk = await Talk.findById(req.body.talk);
+
+    const Conversations = [...user.conversations];
+    Conversations.push(req.body.talk);
+    user.conversations = Conversations;
+    await user.save();
+
+    const Members = [...talk.members];
+    Members.push(req.body.id);
+    talk.members = Members;
+    await talk.save();
+
+    res.send("Successful");
+});
+
+
 module.exports = router;
