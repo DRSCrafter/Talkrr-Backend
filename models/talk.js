@@ -21,7 +21,6 @@ const talkSchema = new mongoose.Schema({
             id: String,
             name: String
         }],
-        required: true,
         default: []
     },
     messages: {

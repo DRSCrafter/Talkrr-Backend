@@ -1,7 +1,6 @@
 const {Talk, validateTalk} = require('../models/talk');
 const {User} = require('../models/user');
 const express = require('express');
-const _ = require('lodash');
 
 const router = express.Router();
 
@@ -10,18 +9,33 @@ router.post('/', async (req, res) => {
     // if (error)
     //     return res.status(400).send(error.details[0].message);
 
-    let talk = new Talk(_.pick(req.body, ['name', 'about', 'members']));
-    await talk.save();
+    let talk = new Talk({
+        name: req.body.name,
+        about: req.body.about,
+        members: []
+    });
+    const Members = [];
 
     for (const member of req.body.members) {
         const talker = await User.findById(member);
-        const Conversations = [...talker.conversations];
+        const Talks = [...talker.talks];
 
-        Conversations.push(talk._id);
-        talker.conversations = Conversations;
+        Members.push({
+            id: member, // if we take the id directly from user, we have to convert it to string which has a performance cost
+            name: talker.name
+        });
+
+        Talks.push({
+            id: talk._id,
+            name: talk.name
+        })
+        talker.talks = Talks;
 
         await talker.save();
     }
+
+    talk.members = Members;
+    await talk.save();
 
     res.send(talk);
 });
