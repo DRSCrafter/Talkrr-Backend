@@ -40,8 +40,8 @@ router.post('/', async (req, res) => {
     res.send(talk);
 });
 
-router.post('/members/', async (req, res) => {
-    const talk = await Talk.findById(req.body.talk);
+router.post('/:id/members/', async (req, res) => {
+    const talk = await Talk.findById(req.params.id);
     if (!talk)
         return res.status(404).send("Talk not found!");
 
@@ -49,8 +49,12 @@ router.post('/members/', async (req, res) => {
     if (!user)
         return res.status(404).send("User not found!");
 
+    const index = talk.members.findIndex(member => member.id === req.body.id);
+    if (index !== -1)
+        return res.status(400).send("User already registered!");
+
     user.talks.push({
-        id: req.body.talk,
+        id: req.params.id,
         name: talk.name
     })
     await user.save();
@@ -64,8 +68,8 @@ router.post('/members/', async (req, res) => {
     res.send("Successful!");
 });
 
-router.delete('/members/', async (req, res) => {
-    const talk = await Talk.findById(req.body.talk);
+router.delete('/:id/members/', async (req, res) => {
+    const talk = await Talk.findById(req.params.id);
     if (!talk)
         return res.status(404).send("Talk not found!");
 
@@ -73,7 +77,11 @@ router.delete('/members/', async (req, res) => {
     if (!user)
         return res.status(404).send("User not found!");
 
-    let index = user.talks.findIndex(talk => talk.id === req.body.talk);
+    let index = talk.members.findIndex(member => member.id === req.body.id);
+    if (index === -1)
+        return res.status(400).send("User is not in the talk!");
+
+    index = user.talks.findIndex(talk => talk.id === req.params.id);
     user.talks.splice(index, 1);
     await user.save();
 
@@ -84,13 +92,14 @@ router.delete('/members/', async (req, res) => {
     res.send("Successful!");
 });
 
-router.post('/:id', async (req, res) => {
+router.post('/:id/message', async (req, res) => {
     const talk = await Talk.findById(req.params.id);
     if (!talk)
         return res.status(404).send("Talk not found!");
 
-    if (validateMessage(req.body).error)
-        return res.status(400).send("Invalid message!");
+    const {error} = validateMessage(req.body);
+    if (error)
+        return res.status(400).send(error.details[0].message);
 
     const message = new Message({
         sender: req.body.sender,
@@ -102,7 +111,7 @@ router.post('/:id', async (req, res) => {
     res.send(message);
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id/message', async (req, res) => {
     const talk = await Talk.findById(req.params.id);
     if (!talk)
         return res.status(400).send("Talk not found!");
@@ -117,7 +126,7 @@ router.put('/:id', async (req, res) => {
     res.send(req.body.content);
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id/message', async (req, res) => {
     const talk = await Talk.findById(req.params.id);
     if (!talk)
         return res.status(400).send("Talk not found!");

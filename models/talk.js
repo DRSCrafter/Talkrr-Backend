@@ -18,6 +18,7 @@ const talkSchema = new mongoose.Schema({
     },
     members: {
         type: [{
+            _id: false,
             id: String,
             name: String
         }],

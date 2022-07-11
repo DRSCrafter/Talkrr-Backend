@@ -19,7 +19,7 @@ router.post('/', async (req, res) => {
     res.send(user);
 });
 
-router.post('/:id', async (req, res) => {
+router.put('/:id', async (req, res) => {
     const user = User.findById(req.params.id);
     if (!user)
         return res.status(400).send("User not found!");
@@ -32,12 +32,15 @@ router.post('/:id', async (req, res) => {
     await user.save();
 });
 
-router.post('/contacts/', async (req, res) => {
+router.post('/:id/contacts/', async (req, res) => {
     const user = await User.findById(req.body.id);
     if (!user)
         return res.status(404).send("User not found!");
 
-    const me = await User.findById(req.body.me);
+    const me = await User.findById(req.params.id);
+    const index = me.contacts.findIndex(contact => contact.id === req.body.id);
+    if (index !== -1)
+        return res.status(400).send("Contact already registered!");
     me.contacts.push({
         id: req.body.id,
         name: user.name
@@ -47,13 +50,15 @@ router.post('/contacts/', async (req, res) => {
     res.send(req.body.id);
 });
 
-router.delete('/contacts/', async (req, res) => {
+router.delete('/:id/contacts/', async (req, res) => {
     const user = await User.findById(req.body.id);
     if (!user)
         return res.status(404).send("User not found!");
 
-    const me = await User.findById(req.body.me);
+    const me = await User.findById(req.params.id);
     const index = me.contacts.findIndex(contact => contact.id === req.body.id);
+    if (index === -1)
+        return res.status(400).send("Contact doesn't exist!");
     me.contacts.splice(index, 1);
 
     await me.save();
@@ -67,6 +72,11 @@ router.get('/:id', async (req, res) => {
 
 router.get('/:id/contacts', async (req, res) => {
     const user = await User.findById(req.params.id).select('-_id contacts');
+    res.send(user);
+});
+
+router.get('/:id/talks', async (req, res) => {
+    const user = await User.findById(req.params.id).select('-_id talks');
     res.send(user);
 });
 
