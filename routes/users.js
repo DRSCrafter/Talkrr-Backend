@@ -38,15 +38,12 @@ router.post('/contacts/', async (req, res) => {
         return res.status(404).send("User not found!");
 
     const me = await User.findById(req.body.me);
-    const Contacts = [...me.contacts];
-    Contacts.push({
+    me.contacts.push({
         id: req.body.id,
         name: user.name
     });
-    me.contacts = Contacts;
 
     await me.save();
-
     res.send(req.body.id);
 });
 
@@ -56,13 +53,10 @@ router.delete('/contacts/', async (req, res) => {
         return res.status(404).send("User not found!");
 
     const me = await User.findById(req.body.me);
-    const Contacts = [...me.contacts];
-    const index = Contacts.findIndex(contact => contact.id === req.body.id);
-    Contacts.splice(index, 1);
+    const index = me.contacts.findIndex(contact => contact.id === req.body.id);
+    me.contacts.splice(index, 1);
 
-    me.contacts = Contacts;
     await me.save();
-
     res.send(req.body.id);
 })
 

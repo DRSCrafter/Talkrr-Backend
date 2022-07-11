@@ -7,9 +7,9 @@ const {ObjectId} = require('mongodb');
 const router = express.Router();
 
 router.post('/', async (req, res) => {
-    // const {error} = validateTalk(req.body);
-    // if (error)
-    //     return res.status(400).send(error.details[0].message);
+    const {error} = validateTalk(req.body);
+    if (error)
+        return res.status(400).send(error.details[0].message);
 
     let talk = new Talk({
         name: req.body.name,
@@ -19,21 +19,19 @@ router.post('/', async (req, res) => {
     const Members = [];
 
     for (const member of req.body.members) {
-        const talker = await User.findById(member);
-        const Talks = [...talker.talks];
+        const user = await User.findById(member);
 
         Members.push({
             id: member, // if we take the id directly from user, we have to convert it to string which has a performance cost
-            name: talker.name
+            name: user.name
         });
 
-        Talks.push({
+        user.talks.push({
             id: talk._id,
             name: talk.name
         })
-        talker.talks = Talks;
 
-        await talker.save();
+        await user.save();
     }
 
     talk.members = Members;
@@ -42,43 +40,25 @@ router.post('/', async (req, res) => {
     res.send(talk);
 });
 
-router.post('/', async (req, res) => {
-    const user = await User.findById(req.body.id);
-    const talk = await Talk.findById(req.body.talk);
-
-    const Conversations = [...user.conversations];
-    Conversations.push(req.body.talk);
-    user.conversations = Conversations;
-    await user.save();
-
-    const Members = [...talk.members];
-    Members.push(req.body.id);
-    talk.members = Members;
-    await talk.save();
-
-    res.send("Successful");
-});
-
 router.post('/members/', async (req, res) => {
     const talk = await Talk.findById(req.body.talk);
+    if (!talk)
+        return res.status(404).send("Talk not found!");
+
     const user = await User.findById(req.body.id);
     if (!user)
         return res.status(404).send("User not found!");
 
-    const Talks = [...user.talks];
-    Talks.push({
+    user.talks.push({
         id: req.body.talk,
         name: talk.name
     })
-    user.talks = Talks;
     await user.save();
 
-    const Members = [...talk.members];
-    Members.push({
+    talk.members.push({
         id: req.body.id,
         name: user.name
     })
-    talk.members = Members;
     await talk.save();
 
     res.send("Successful!");
@@ -86,20 +66,19 @@ router.post('/members/', async (req, res) => {
 
 router.delete('/members/', async (req, res) => {
     const talk = await Talk.findById(req.body.talk);
+    if (!talk)
+        return res.status(404).send("Talk not found!");
+
     const user = await User.findById(req.body.id);
     if (!user)
         return res.status(404).send("User not found!");
 
-    const Talks = [...user.talks];
-    let index = Talks.findIndex(talk => talk.id === req.body.talk);
-    Talks.splice(index, 1);
-    user.talks = Talks;
+    let index = user.talks.findIndex(talk => talk.id === req.body.talk);
+    user.talks.splice(index, 1);
     await user.save();
 
-    const Members = [...talk.members];
-    index = Members.findIndex(member => member.id === req.body.id);
-    Members.splice(index, 1);
-    talk.members = Members;
+    index = talk.members.findIndex(member => member.id === req.body.id);
+    talk.members.splice(index, 1);
     await talk.save();
 
     res.send("Successful!");
@@ -125,20 +104,24 @@ router.post('/:id', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
     const talk = await Talk.findById(req.params.id);
-    const messageId = new ObjectId(req.body.id);
+    if (!talk)
+        return res.status(400).send("Talk not found!");
 
+    const messageId = new ObjectId(req.body.id);
     const index = talk.messages.findIndex(message => messageId.equals(message._id));
     if (index === -1)
         return res.status(400).send("Message does not exist!");
 
     talk.messages[index].content = req.body.content;
-
     await talk.save();
     res.send(req.body.content);
 });
 
 router.delete('/:id', async (req, res) => {
     const talk = await Talk.findById(req.params.id);
+    if (!talk)
+        return res.status(400).send("Talk not found!");
+
     const messageId = new ObjectId(req.body.id);
 
     const index = talk.messages.findIndex(message => messageId.equals(message._id));
