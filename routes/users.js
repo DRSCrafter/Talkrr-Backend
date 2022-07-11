@@ -19,6 +19,19 @@ router.post('/', async (req, res) => {
     res.send(user);
 });
 
+router.post('/:id', async (req, res) => {
+    const user = User.findById(req.params.id);
+    if (!user)
+        return res.status(400).send("User not found!");
+
+    user.name = req.body.name;
+    user.password = req.body.password;
+    user.phoneNumber = req.body.phoneNumber;
+    user.bio = req.body.bio;
+
+    await user.save();
+});
+
 router.post('/contacts/', async (req, res) => {
     const user = await User.findById(req.body.id);
     if (!user)

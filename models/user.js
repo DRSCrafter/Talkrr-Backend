@@ -15,10 +15,10 @@ const userSchema = new mongoose.Schema({
         maxlength: 255,
     },
     password: {
-      type: String,
-      required: true,
-      minlength: 5,
-      maxlength: 100
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 100
     },
     phoneNumber: {
         type: Number,
@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     },
     contacts: {
         type: [{
+            _id: false,
             id: String,
             name: String,
         }],
@@ -42,6 +43,7 @@ const userSchema = new mongoose.Schema({
     },
     talks: {
         type: [{
+            _id: false,
             id: String,
             name: String
         }],
