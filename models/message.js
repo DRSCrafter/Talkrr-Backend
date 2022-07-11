@@ -2,6 +2,8 @@ const Joi = require('joi');
 const mongoose = require('mongoose');
 
 const messageSchema = new mongoose.Schema({
+    autoCreate: false,
+    autoIndex: false,
     sender: {
         _id: false,
         type: {

@@ -66,4 +66,14 @@ router.delete('/contacts/', async (req, res) => {
     res.send(req.body.id);
 })
 
+router.get('/:id', async (req, res) => {
+    const user = await User.findById(req.params.id).select('-password -contacts -talks -__v');
+    res.send(user);
+});
+
+router.get('/:id/contacts', async (req, res) => {
+    const user = await User.findById(req.params.id).select('-_id contacts');
+    res.send(user);
+});
+
 module.exports = router;

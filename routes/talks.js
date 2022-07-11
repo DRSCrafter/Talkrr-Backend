@@ -148,4 +148,12 @@ router.delete('/:id', async (req, res) => {
     res.send("Successful!");
 });
 
+router.get('/:id', async (req, res) => {
+    const talk = Talk.findById(req.params.id);
+    if (!talk)
+        return res.status(400).send("Talk not found!");
+
+    res.send(talk);
+});
+
 module.exports = router;
