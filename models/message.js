@@ -5,11 +5,7 @@ const messageSchema = new mongoose.Schema({
     autoCreate: false,
     autoIndex: false,
     sender: {
-        _id: false,
-        type: {
-            id: String,
-            name: String
-        },
+        type: String,
         required: true
     },
     content: {
@@ -27,10 +23,7 @@ const Message = mongoose.model('Message', messageSchema);
 
 function validateMessage(message) {
     const schema = Joi.object({
-        sender: {
-            id: Joi.string().length(24).required(),
-            name: Joi.string().min(3).max(50).required()
-        },
+        sender: Joi.string().length(24).required(),
         content: Joi.string().min(1).max(255).required(),
     })
 
