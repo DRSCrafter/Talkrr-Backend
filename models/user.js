@@ -32,6 +32,7 @@ const userSchema = new mongoose.Schema({
     maxlength: 100,
     default: "This is a test from Talkrr",
   },
+  profileImage: String,
   contacts: {
     type: [mongoose.Schema.Types.ObjectId],
     required: true,

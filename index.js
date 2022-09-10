@@ -21,6 +21,7 @@ mongoose.connect('mongodb://localhost/talkrr')
 
 app.use(express.json());
 app.use(cors({exposedHeaders: 'x-auth-token'}));
+app.use('/uploads', express.static('uploads'));
 app.use('/api/users', user);
 app.use('/api/talks', talk);
 app.use('/api/auth', auth);

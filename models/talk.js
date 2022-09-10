@@ -20,6 +20,7 @@ const talkSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  talkImage: String,
   messages: {
     type: [messageSchema],
     required: true,
