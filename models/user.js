@@ -43,7 +43,6 @@ const userSchema = new mongoose.Schema({
       {
         _id: false,
         id: String,
-        name: String,
       },
     ],
     required: true,
