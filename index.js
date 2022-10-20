@@ -7,6 +7,7 @@ const user = require("./routes/users");
 const talk = require("./routes/talks");
 const auth = require("./routes/auth");
 const cors = require("cors");
+const { ObjectId } = require("mongodb");
 const { Talk } = require("./models/talk");
 const { Message } = require("./models/message");
 
@@ -18,7 +19,9 @@ const server = app.listen(port, () =>
   console.log(`Listening on Port ${port}...`)
 );
 
-const io = require("socket.io")(server, { cors: { origin: "*" } });
+const io = require("socket.io")(server, {
+  cors: { origin: true, credentials: true },
+});
 
 if (!config.get("jwtPrivateKey")) {
   console.error("Private Key not defined!");
@@ -37,12 +40,34 @@ app.use("/api/users", user);
 app.use("/api/talks", talk);
 app.use("/api/auth", auth);
 
+const clients = [];
+
 io.on("connection", (socket) => {
-  console.log("New client connected...");
+  socket.on("login", async (data) => {
+    const client = {
+      socketID: socket.id,
+      userID: data,
+    };
+
+    clients.push(client);
+    socket.emit("log", `${data} is now online...`);
+  });
+
+  socket.on("createRoom", async (data) => {
+    const talk = await Talk.findById(data.talkID);
+    console.log(talk._id.toString());
+    const filterClients = clients.filter((client) =>
+      data.userIDs.includes(client.userID)
+    );
+    const clientIDs = filterClients.map((client) => client.socketID);
+    console.log("clients", clientIDs);
+    for (let clientID of clientIDs)
+      io.to(clientID).emit("getRoom", talk._id.toString());
+  });
 
   socket.on("watchRooms", async (data) => {
     socket.join(data);
-    socket.emit("log", `watching ${data}...`);
+    // socket.emit("log", `watching ${data}...`);
   });
 
   socket.on("joinRoom", async (data) => {
@@ -65,4 +90,21 @@ io.on("connection", (socket) => {
       .to(data.talkID)
       .emit("message", { ...message, talkID: data.talkID });
   });
+
+  socket.on("deleteMessage", async (data) => {
+    const talk = await Talk.findById(data.talkID);
+
+    const messageId = new ObjectId(data.messageID);
+
+    const index = talk.messages.findIndex((message) =>
+      messageId.equals(message._id)
+    );
+    talk.messages.splice(index, 1);
+
+    await talk.save();
+
+    socket.broadcast.to(data.talkID).emit("removeMessage", data);
+  });
+
+  socket.on("createRoom", async (data) => {});
 });
