@@ -67,12 +67,14 @@ io.on("connection", (socket) => {
 
   socket.on("watchRooms", async (data) => {
     socket.join(data);
-    // socket.emit("log", `watching ${data}...`);
   });
 
   socket.on("joinRoom", async (data) => {
-    const talk = await Talk.findById(data);
-    socket.emit("talk", talk);
+    socket.join(`${data}room`);
+  });
+
+  socket.on("leaveRoom", async (data) => {
+    socket.leave(`${data}room`);
   });
 
   socket.on("sendMessage", async (data) => {
@@ -87,8 +89,10 @@ io.on("connection", (socket) => {
     await talk.save();
 
     socket.broadcast
-      .to(data.talkID)
+      .to(`${data.talkID}room`)
       .emit("message", { ...message, talkID: data.talkID });
+
+    socket.broadcast.to(data.talkID).emit("notify", { talkID: data.talkID });
   });
 
   socket.on("deleteMessage", async (data) => {
@@ -103,8 +107,6 @@ io.on("connection", (socket) => {
 
     await talk.save();
 
-    socket.broadcast.to(data.talkID).emit("removeMessage", data);
+    socket.broadcast.to(`${data.talkID}room`).emit("removeMessage", data);
   });
-
-  socket.on("createRoom", async (data) => {});
 });
