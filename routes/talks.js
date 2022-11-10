@@ -48,7 +48,6 @@ router.post("/", upload.single("talkImage"), async (req, res) => {
   const Members = [];
 
   if (req.file) talk.talkImage = req.file.path;
-  console.log(talk);
 
   for (let member of JSON.parse(req.body.members)) {
     if (!member) return res.status(400).send("Invalid Username!");
@@ -180,6 +179,15 @@ router.delete("/:id/message/:messageID", async (req, res) => {
 router.get("/:id", async (req, res) => {
   const talk = await Talk.findById(req.params.id);
   if (!talk) return res.status(400).send("Talk not found!");
+
+  res.send(talk);
+});
+
+router.get("/:id/private/:targetId", async (req, res) => {
+  const talk = await Talk.findOne({
+    isPrivate: true,
+    members: { $in: [req.params.targetId, req.params.id] },
+  });
 
   res.send(talk);
 });

@@ -55,12 +55,10 @@ io.on("connection", (socket) => {
 
   socket.on("createRoom", async (data) => {
     const talk = await Talk.findById(data.talkID);
-    console.log(talk._id.toString());
     const filterClients = clients.filter((client) =>
       data.userIDs.includes(client.userID)
     );
     const clientIDs = filterClients.map((client) => client.socketID);
-    console.log("clients", clientIDs);
     for (let clientID of clientIDs)
       io.to(clientID).emit("getRoom", talk._id.toString());
   });
