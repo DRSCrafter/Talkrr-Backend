@@ -9,6 +9,7 @@ const auth = require("./routes/auth");
 const cors = require("cors");
 const { ObjectId } = require("mongodb");
 const { Talk } = require("./models/talk");
+const { User } = require("./models/user");
 const { Message } = require("./models/message");
 
 const port = process.env.PORT || 3001;
@@ -41,6 +42,11 @@ app.use("/api/talks", talk);
 app.use("/api/auth", auth);
 
 const clients = [];
+
+const findClientSet = (id) => {
+  const clientset = clients.filter((client) => client.userID == id);
+  return clientset.map((client) => client.socketID);
+};
 
 io.on("connection", (socket) => {
   socket.on("login", async (data) => {
@@ -106,5 +112,19 @@ io.on("connection", (socket) => {
     await talk.save();
 
     socket.broadcast.to(`${data.talkID}room`).emit("removeMessage", data);
+  });
+
+  socket.on("deleteTalk", async (data) => {
+    const talk = await Talk.findByIdAndDelete(data.talkID);
+
+    for (let member of talk.members) {
+      const user = await User.findById(member);
+      user.talks = user.talks.filter((talk) => talk.id != data.talkID);
+      await user.save();
+
+      const socketIDSet = findClientSet(member);
+      for (let socketID of socketIDSet)
+        io.to(socketID).emit("removeTalk", { talkID: data.talkID });
+    }
   });
 });

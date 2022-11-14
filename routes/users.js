@@ -97,7 +97,6 @@ router.post("/:id/contacts", async (req, res) => {
 });
 
 router.post("/:id/pin", async (req, res) => {
-  console.log(req.body);
   const user = await User.findById(req.params.id);
   if (!user) return res.status(400).send("User not found!");
 
