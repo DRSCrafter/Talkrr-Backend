@@ -38,7 +38,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     default: [],
   },
-  talks: {
+  chats: {
     type: [
       {
         _id: false,

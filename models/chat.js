@@ -2,25 +2,23 @@ const Joi = require("joi");
 const mongoose = require("mongoose");
 const { messageSchema } = require("../models/message");
 
-const talkSchema = new mongoose.Schema({
+const chatSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    // minlength: 3,
     maxlength: 70,
   },
   about: {
     type: String,
     required: true,
-    // minlength: 3,
     maxlength: 100,
-    default: "This is a talk from Talkrr",
+    default: "This is a chat from Talkrr",
   },
   members: {
     type: [String],
     default: [],
   },
-  talkImage: String,
+  chatImage: String,
   messages: {
     type: [messageSchema],
     required: true,
@@ -33,9 +31,9 @@ const talkSchema = new mongoose.Schema({
   },
 });
 
-const Talk = mongoose.model("Talk", talkSchema);
+const Chat = mongoose.model("Chat", chatSchema);
 
-function validateTalk(talk) {
+function validateChat(chat) {
   const schema = Joi.object({
     name: Joi.string().max(50).required(),
     about: Joi.string().max(100),
@@ -43,8 +41,8 @@ function validateTalk(talk) {
     isPrivate: Joi.boolean(),
   });
 
-  return schema.validate(talk);
+  return schema.validate(chat);
 }
 
-module.exports.Talk = Talk;
-module.exports.validateTalk = validateTalk;
+module.exports.Chat = Chat;
+module.exports.validateChat = validateChat;

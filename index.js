@@ -1,20 +1,21 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const config = require("config");
+
 const Joi = require("joi");
 Joi.objectId = require("joi-objectid")(Joi);
-const config = require("config");
-const user = require("./routes/users");
-const talk = require("./routes/talks");
-const auth = require("./routes/auth");
 const cors = require("cors");
 const { ObjectId } = require("mongodb");
-const { Talk } = require("./models/talk");
+const { Chat } = require("./models/chat");
 const { User } = require("./models/user");
 const { Message } = require("./models/message");
 
 const port = process.env.PORT || 3001;
 
 const app = express();
+
+require("./startup/routes")(app);
+require("./startup/prod")(app);
 
 const server = app.listen(port, () =>
   console.log(`Listening on Port ${port}...`)
@@ -29,8 +30,10 @@ if (!config.get("jwtPrivateKey")) {
   process.exit(1);
 }
 
+const db = config.get("db");
+
 mongoose
-  .connect("mongodb://localhost/talkrr")
+  .connect(db)
   .then(() => console.log("Connected to MongoDB..."))
   .catch(() => console.log("Connection failed!"));
 
@@ -38,7 +41,7 @@ app.use(express.json());
 app.use(cors({ exposedHeaders: "x-auth-token" }));
 app.use("/uploads", express.static("uploads"));
 app.use("/api/users", user);
-app.use("/api/talks", talk);
+app.use("/api/chats", chat);
 app.use("/api/auth", auth);
 
 const clients = [];
@@ -60,13 +63,13 @@ io.on("connection", (socket) => {
   });
 
   socket.on("createRoom", async (data) => {
-    const talk = await Talk.findById(data.talkID);
+    const chat = await Chat.findById(data.chatID);
     const filterClients = clients.filter((client) =>
       data.userIDs.includes(client.userID)
     );
     const clientIDs = filterClients.map((client) => client.socketID);
     for (let clientID of clientIDs)
-      io.to(clientID).emit("getRoom", talk._id.toString());
+      io.to(clientID).emit("getRoom", chat._id.toString());
   });
 
   socket.on("watchRooms", async (data) => {
@@ -82,49 +85,49 @@ io.on("connection", (socket) => {
   });
 
   socket.on("sendMessage", async (data) => {
-    const talk = await Talk.findById(data.talkID);
+    const chat = await Chat.findById(data.chatID);
 
     const message = new Message({
       sender: data.sender,
       content: data.content,
     });
 
-    talk.messages.push(message);
-    await talk.save();
+    chat.messages.push(message);
+    await chat.save();
 
     socket.broadcast
-      .to(`${data.talkID}room`)
-      .emit("message", { ...message, talkID: data.talkID });
+      .to(`${data.chatID}room`)
+      .emit("message", { ...message, chatID: data.chatID });
 
-    socket.broadcast.to(data.talkID).emit("notify", { talkID: data.talkID });
+    socket.broadcast.to(data.chatID).emit("notify", { chatID: data.chatID });
   });
 
   socket.on("deleteMessage", async (data) => {
-    const talk = await Talk.findById(data.talkID);
+    const chat = await Chat.findById(data.chatID);
 
     const messageId = new ObjectId(data.messageID);
 
-    const index = talk.messages.findIndex((message) =>
+    const index = chat.messages.findIndex((message) =>
       messageId.equals(message._id)
     );
-    talk.messages.splice(index, 1);
+    chat.messages.splice(index, 1);
 
-    await talk.save();
+    await chat.save();
 
-    socket.broadcast.to(`${data.talkID}room`).emit("removeMessage", data);
+    socket.broadcast.to(`${data.chatID}room`).emit("removeMessage", data);
   });
 
-  socket.on("deleteTalk", async (data) => {
-    const talk = await Talk.findByIdAndDelete(data.talkID);
+  socket.on("deleteChat", async (data) => {
+    const chat = await Chat.findByIdAndDelete(data.chatID);
 
-    for (let member of talk.members) {
+    for (let member of chat.members) {
       const user = await User.findById(member);
-      user.talks = user.talks.filter((talk) => talk.id != data.talkID);
+      user.chats = user.chats.filter((chat) => chat.id != data.chatID);
       await user.save();
 
       const socketIDSet = findClientSet(member);
       for (let socketID of socketIDSet)
-        io.to(socketID).emit("removeTalk", { talkID: data.talkID });
+        io.to(socketID).emit("removeChat", { chatID: data.chatID });
     }
   });
 });

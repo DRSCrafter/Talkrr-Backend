@@ -5,7 +5,7 @@ const multer = require("multer");
 const config = require("config");
 
 const { User, validateUser } = require("../models/user.js");
-const { Talk, validateTalk } = require("../models/talk.js");
+const { Chat, validateChat } = require("../models/chat.js");
 const auth = require("../middlewares/auth");
 
 const router = express.Router();
@@ -100,8 +100,8 @@ router.post("/:id/pin", async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(400).send("User not found!");
 
-  const talk = await Talk.findById(req.body.id);
-  if (!talk) return res.status(400).send("Talk not found!");
+  const chat = await Chat.findById(req.body.id);
+  if (!chat) return res.status(400).send("Chat not found!");
 
   user.pins.push(req.body.id);
   await user.save();
@@ -111,8 +111,8 @@ router.put("/:id/unpin", async (req, res) => {
   const user = await User.findById(req.params.id);
   if (!user) return res.status(400).send("User not found!");
 
-  const talk = await Talk.findById(req.body.id);
-  if (!talk) return res.status(400).send("Talk not found!");
+  const chat = await Chat.findById(req.body.id);
+  if (!chat) return res.status(400).send("Chat not found!");
 
   user.pins = user.pins.filter((pin) => pin != req.body.id);
   await user.save();
@@ -150,7 +150,7 @@ router.get("/:id", async (req, res) => {
 
 router.get("/contacts/:id", async (req, res) => {
   const user = await User.findById(req.params.id).select(
-    "-password -contacts -talks"
+    "-password -contacts -chats"
   );
   res.send(user);
 });
