@@ -1,20 +1,14 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 const multer = require("multer");
+const cloudinary = require("../utils/cloudinary");
 
 const { validateMessage, Message } = require("../models/message");
 const { Chat, validateChat } = require("../models/chat");
 const { User } = require("../models/user");
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, "./uploads/chats");
-  },
-  filename: (req, file, callback) => {
-    callback(null, file.originalname);
-  },
-});
+const storage = multer.diskStorage({});
 
 const fileFilter = (req, file, callback) => {
   if (
@@ -47,7 +41,10 @@ router.post("/", upload.single("chatImage"), async (req, res) => {
   });
   const Members = [];
 
-  if (req.file) chat.chatImage = req.file.path;
+  if (req.file) {
+    const result = await cloudinary.uploader.upload(req.file.path);
+    chat.chatImage = result.url;
+  }
 
   for (let member of JSON.parse(req.body.members)) {
     if (!member) return res.status(400).send("Invalid Username!");

@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const config = require("config");
+const cloudinary = require("../utils/cloudinary");
 
 const { User, validateUser } = require("../models/user.js");
 const { Chat, validateChat } = require("../models/chat.js");
@@ -10,14 +11,7 @@ const auth = require("../middlewares/auth");
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, "./uploads/users");
-  },
-  filename: (req, file, callback) => {
-    callback(null, file.originalname);
-  },
-});
+const storage = multer.diskStorage({});
 
 const fileFilter = (req, file, callback) => {
   if (
@@ -52,7 +46,11 @@ router.post("/", upload.single("profileImage"), async (req, res) => {
     phoneNumber: req.body.phoneNumber,
     bio: req.body.bio,
   });
-  if (req.file) user.profileImage = req.file.path;
+  if (req.file) {
+    const result = await cloudinary.uploader.upload(req.file.path);
+    user.profileImage = result.url;
+    console.log("reached!");
+  }
 
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);

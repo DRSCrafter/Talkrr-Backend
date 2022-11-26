@@ -37,13 +37,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB..."))
   .catch(() => console.log("Connection failed!"));
 
-app.use(express.json());
-app.use(cors({ exposedHeaders: "x-auth-token" }));
-app.use("/uploads", express.static("uploads"));
-app.use("/api/users", user);
-app.use("/api/chats", chat);
-app.use("/api/auth", auth);
-
 const clients = [];
 
 const findClientSet = (id) => {
