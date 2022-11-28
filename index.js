@@ -1,10 +1,9 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const config = require("config");
 
 const cors = require("cors");
 
-if (!config.get("jwtPrivateKey")) {
+if (!process.env.talkrr_jwtPrivateKey) {
   console.error("Private Key not defined!");
   process.exit(1);
 }
@@ -24,7 +23,7 @@ require("./startup/routes")(app);
 require("./startup/prod")(app);
 require("./startup/socket")(server);
 
-const db = config.get("db");
+const db = process.env.talkrr_db;
 mongoose
   .connect(db)
   .then(() => console.log("Connected to MongoDB..."))

@@ -2,7 +2,6 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
-const config = require("config");
 const cloudinary = require("../utils/cloudinary");
 
 const { User, validateUser } = require("../models/user.js");
@@ -56,7 +55,7 @@ router.post("/", upload.single("profileImage"), async (req, res) => {
   user.password = await bcrypt.hash(user.password, salt);
   await user.save();
 
-  const token = jwt.sign({ _id: user._id }, config.get("jwtPrivateKey"));
+  const token = jwt.sign({ _id: user._id }, process.env.talkrr_jwtPrivateKey);
   res.header("x-auth-token", token).send(user);
 });
 
@@ -67,7 +66,7 @@ router.put("/login", async (req, res) => {
   const isValid = await bcrypt.compare(req.body.password, user.password);
   if (!isValid) return res.status(400).send("Password incorrect!");
 
-  const token = jwt.sign({ _id: user._id }, config.get("jwtPrivateKey"));
+  const token = jwt.sign({ _id: user._id }, process.env.talkrr_jwtPrivateKey);
   res.header("x-auth-token", token).send(user);
 });
 

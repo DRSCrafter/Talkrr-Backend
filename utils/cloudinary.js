@@ -1,10 +1,9 @@
 const cloudinary = require("cloudinary").v2;
-const config = require("config");
 
 cloudinary.config({
-  cloud_name: config.get("cloudName"),
-  api_key: config.get("cloudApiKey"),
-  api_secret: config.get("cloudApiSecret"),
+  cloud_name: process.env.talkrr_cloudName,
+  api_key: process.env.talkrr_cloudApiKey,
+  api_secret: process.env.talkrr_cloudApiSecret,
 });
 
 module.exports = cloudinary;
