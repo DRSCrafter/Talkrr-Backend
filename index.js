@@ -9,7 +9,7 @@ if (!config.get("jwtPrivateKey")) {
   process.exit(1);
 }
 
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3005;
 
 const app = express();
 app.use(express.json());
