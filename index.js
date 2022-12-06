@@ -8,7 +8,7 @@ if (!process.env.talkrr_jwtPrivateKey) {
   process.exit(1);
 }
 
-const port = process.env.PORT || 3005;
+const port = process.env.PORT || 3001;
 
 const app = express();
 app.use(express.json());
@@ -23,7 +23,7 @@ require("./startup/routes")(app);
 require("./startup/prod")(app);
 require("./startup/socket")(server);
 
-const db = process.env.talkrr_db;
+const db = "mongodb://localhost/talkrr";
 mongoose
   .connect(db)
   .then(() => console.log("Connected to MongoDB..."))

@@ -146,8 +146,10 @@ router.put("/:id/message", async (req, res) => {
 });
 
 router.delete("/:id", async (req, res) => {
+  const verify = await Chat.findById(req.params.id);
+  if (!verify) return res.status(400).send("Chat not found!");
+
   const chat = await Chat.findByIdAndDelete(req.params.id);
-  if (!chat) return res.status(400).send("Chat not found!");
 
   for (let member of chat.members) {
     const user = await User.findById(member);
@@ -182,10 +184,11 @@ router.get("/:id", async (req, res) => {
 
 router.get("/:id/private/:targetId", async (req, res) => {
   const chat = await Chat.findOne({
-    isPrivate: true,
-    members: { $in: [req.params.targetId, req.params.id] },
+    $or: [
+      { members: [req.params.targetId, req.params.id] },
+      { members: [req.params.id, req.params.targetId] },
+    ],
   });
-
   res.send(chat);
 });
 
