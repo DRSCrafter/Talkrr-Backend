@@ -188,6 +188,7 @@ router.get("/:id/private/:targetId", async (req, res) => {
       { members: [req.params.targetId, req.params.id] },
       { members: [req.params.id, req.params.targetId] },
     ],
+    isPrivate: true,
   });
   res.send(chat);
 });
