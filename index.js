@@ -23,7 +23,7 @@ require("./startup/routes")(app);
 require("./startup/prod")(app);
 require("./startup/socket")(server);
 
-const db = "mongodb://localhost/talkrr";
+const db = process.env.talkrr_db;
 mongoose
   .connect(db)
   .then(() => console.log("Connected to MongoDB..."))
