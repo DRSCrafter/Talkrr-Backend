@@ -1,7 +1,5 @@
 node_modules
-.VSCodeCounter
-uploads
+dist
 .idea
-config
-package-lock.json
-uncaughtExceptions.log
+
+.env

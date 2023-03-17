@@ -1,5 +1,7 @@
-const winston = require('winston');
-require('express-async-errors');
+// @ts-nocheck
+
+import winston from 'winston';
+import 'express-async-errors';
 
 module.exports = function () {
     winston.handleExceptions(
