@@ -1,26 +1,27 @@
 import express from "express";
 import multer from "../utils/multer";
 import * as userController from '../controllers/userController';
+import auth from "../middlewares/auth";
 
 const router = express.Router();
 
 router.post("/", multer.single("profileImage"), userController.postUser);
 
-router.put("/login", userController.login);
+router.post("/login", userController.login);
 
-router.post("/:id/contacts", userController.postContact);
+router.post("/contacts/:id", auth, userController.postContact);
 
-router.post("/:id/pin", userController.postPin);
+router.post("/pin/:id", auth, userController.postPin);
 
-router.put("/:id", userController.editUser);
+router.put("/", auth, userController.editUser);
 
-router.put("/:id/unpin", userController.removePin);
+router.put("/unpin/:id", auth, userController.removePin);
 
-router.put("/:id/contacts", userController.removeContact);
+router.put("/contacts", auth, userController.removeContact);
 
-router.get("/:id/contacts", userController.getContacts);
+router.get("/contacts", auth, userController.getContacts);
 
-router.get("/:id", userController.getUser);
+router.get("/", auth, userController.getUser);
 
 router.get("/contacts/:id", userController.getContact);
 

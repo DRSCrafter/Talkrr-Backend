@@ -6,6 +6,7 @@ import {User, validateUser} from "../models/user.js";
 import {Chat, validateChat} from "../models/chat.js";
 import {UserDocument} from "../types/models/user";
 import {ChatDocument} from "../types/models/chat";
+import {Types} from "mongoose";
 
 export const postUser: RequestHandler = async (req, res) => {
     const {error} = validateUser(req.body);
@@ -24,14 +25,13 @@ export const postUser: RequestHandler = async (req, res) => {
     if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path);
         user.profileImage = result.url;
-        console.log("reached!");
     }
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(user.password, salt);
     await user.save();
 
-    const token = jwt.sign({_id: user._id}, process.env.talkrr_jwtPrivateKey!);
+    const token = jwt.sign({id: user._id}, process.env.talkrr_jwtPrivateKey!);
     res.header("x-auth-token", token).send(user);
 };
 
@@ -47,7 +47,8 @@ export const login: RequestHandler = async (req, res) => {
 };
 
 export const editUser: RequestHandler = async (req, res) => {
-    const user = await User.findById(req.params.id);
+    const userId = req.body.user.id;
+    const user = await User.findById(userId);
     if (!user) return res.status(400).send("User not found!");
 
     user.name = req.body.name;
@@ -59,23 +60,25 @@ export const editUser: RequestHandler = async (req, res) => {
 };
 
 export const postContact: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.body.id);
+    const userId = req.body.user.id;
+    const user: UserDocument | null = await User.findById(req.params.id);
     if (!user) return res.status(404).send("User not found!");
 
-    const me: UserDocument | null = await User.findById(req.params.id);
+    const me: UserDocument | null = await User.findById(userId);
     if (!me) return res.status(404).send("Contact not found!");
 
-    me.contacts.push(req.body.id);
+    me.contacts.push(req.params.id as unknown as Types.ObjectId);
 
     await me.save();
-    res.send(req.body.id);
+    res.send(req.params.id);
 };
 
 export const postPin: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.params.id);
+    const userId = req.body.user.id;
+    const user: UserDocument | null = await User.findById(userId);
     if (!user) return res.status(400).send("User not found!");
 
-    const chat: ChatDocument | null = await Chat.findById(req.body.id);
+    const chat: ChatDocument | null = await Chat.findById(req.params.id);
     if (!chat) return res.status(400).send("Chat not found!");
 
     user.pins.push(req.body.id);
@@ -83,31 +86,34 @@ export const postPin: RequestHandler = async (req, res) => {
 };
 
 export const removePin: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.params.id);
+    const userId = req.body.user.id;
+    const user: UserDocument | null = await User.findById(userId);
     if (!user) return res.status(400).send("User not found!");
 
-    const chat: ChatDocument | null = await Chat.findById(req.body.id);
+    const chat: ChatDocument | null = await Chat.findById(req.params.id);
     if (!chat) return res.status(400).send("Chat not found!");
 
-    user.pins = user.pins.filter((pin) => pin != req.body.id);
+    user.pins = user.pins.filter((pin) => pin.toString() != req.params.id);
     await user.save();
 };
 
 export const removeContact: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.body.id);
+    const userId = req.body.user.id;
+    const user: UserDocument | null = await User.findById(req.params.id);
     if (!user) return res.status(404).send("User not found!");
 
-    const me: UserDocument | null = await User.findById(req.params.id);
+    const me: UserDocument | null = await User.findById(userId);
     if (!me) return res.status(404).send("Contact not found!");
 
-    me.contacts = me.contacts.filter((contact) => contact != req.body.id);
+    me.contacts = me.contacts.filter((contact) => contact.toString() != req.params.id);
 
     await me.save();
     res.send(req.body.id);
 };
 
 export const getContacts: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.params.id);
+    const userId = req.body.user.id;
+    const user: UserDocument | null = await User.findById(userId);
     if (!user) return res.status(400).send("User not found!");
 
     const contacts = [];
@@ -121,14 +127,15 @@ export const getContacts: RequestHandler = async (req, res) => {
 };
 
 export const getUser: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.params.id).select("-password");
+    const userId = req.body.user.id;
+    const user: UserDocument | null | any = await User.findById(userId).select("-password -__v");
     if (!user) return res.status(400).send("User not found!");
 
     res.send(user);
 };
 
 export const getContact: RequestHandler = async (req, res) => {
-    const user: UserDocument | null = await User.findById(req.params.id).select("-password -contacts -chats");
+    const user: UserDocument | null | any = await User.findById(req.params.id).select("-password -contacts -chats -pins -__v");
     if (!user) return res.status(400).send("User not found!");
 
     res.send(user);

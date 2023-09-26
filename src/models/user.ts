@@ -61,7 +61,7 @@ export function validateUser(user: User) {
         name: Joi.string().min(3).max(70).required(),
         email: Joi.string().min(5).max(255).required().email(),
         password: Joi.string().min(5).max(100).required(),
-        phoneNumber: Joi.string().min(7).max(15),
+        phoneNumber: Joi.string(),
         bio: Joi.string().min(3).max(100),
     });
 
